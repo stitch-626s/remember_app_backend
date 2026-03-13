@@ -1,0 +1,15 @@
+.el-menu-vertical:not(.el-menu--collapse) {
+    width: 200px;
+    height: 100vh;
+}
+
+.sidebar-container::--webkit--scrollbar {
+    display: none;
+    height: 100vh;
+    transition: width 0.1s ease;
+}
+
+.el-menu-vertical {
+    height: 100vh;
+    border-right: none;
+}
