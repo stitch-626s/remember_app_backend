@@ -1,9 +1,12 @@
 package com.remember_app.remember.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.remember_app.remember.common.Result;
+import com.remember_app.remember.entity.Question;
 import com.remember_app.remember.entity.QuestionBank;
 import com.remember_app.remember.exception.QuestionBankException;
 import com.remember_app.remember.service.QuestionBankService;
+import com.remember_app.remember.service.QuestionService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +17,8 @@ import java.util.List;
 public class QuestionBankController {
     @Resource
     private QuestionBankService questionBankService;
+    @Resource
+    private QuestionService questionService;
 
     /**
      * 新增题库
@@ -47,8 +52,11 @@ public class QuestionBankController {
     @GetMapping("/{id}")
     public Result getOne(@PathVariable Integer id) {
         try {
-            QuestionBank question = questionBankService.getById(id);
-            return Result.success(question);
+            QuestionBank bank = questionBankService.getById(id);
+            if (bank != null) {
+                bank.setQuestions(questionService.getQuestionsByQbId(id));
+            }
+            return Result.success(bank);
         }catch (QuestionBankException e){
             return Result.error(e.getMessage());
         }
@@ -60,8 +68,12 @@ public class QuestionBankController {
     @GetMapping
     public Result list() {
         try {
-            List<QuestionBank> list = questionBankService.list();
-            return Result.success(list);
+            List<QuestionBank> bankList = questionBankService.list();
+            for (QuestionBank bank : bankList) {
+                List<Question> questions = questionService.getQuestionsByQbId(bank.getQbId());
+                bank.setQuestions(questions);
+            }
+            return Result.success(bankList);
         }catch (QuestionBankException e){
             return Result.error(e.getMessage());
         }

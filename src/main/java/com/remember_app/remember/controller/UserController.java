@@ -2,6 +2,8 @@ package com.remember_app.remember.controller;
 
 import com.remember_app.remember.common.Result;
 import com.remember_app.remember.entity.User;
+import com.remember_app.remember.entity.dto.UserLoginDTO;
+import com.remember_app.remember.entity.dto.UserRegisterDTO;
 import com.remember_app.remember.exception.UserException;
 import com.remember_app.remember.service.UserService;
 import jakarta.annotation.Resource;
@@ -80,5 +82,18 @@ public class UserController {
         return Result.success();
     }
 
+    /**
+     * 用户注册接口
+     */
+    @PostMapping("/register")
+    public Result register(@RequestBody UserRegisterDTO registerDTO) {
+        userService.register(registerDTO);
+        return Result.success();
+    }
 
+    @PostMapping("/login")
+    public Result login(@RequestBody UserLoginDTO loginDTO) {
+        User user = userService.login(loginDTO);
+        return Result.success(user);
+    }
 }
