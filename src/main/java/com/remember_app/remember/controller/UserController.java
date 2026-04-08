@@ -8,7 +8,6 @@ import com.remember_app.remember.entity.dto.UserRegisterDTO;
 import com.remember_app.remember.exception.UserException;
 import com.remember_app.remember.service.UserService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
