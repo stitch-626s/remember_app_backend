@@ -1,12 +1,17 @@
 package com.remember_app.remember.controller;
 
+import com.remember_app.remember.common.JwtUtils;
 import com.remember_app.remember.common.Result;
 import com.remember_app.remember.entity.User;
+import com.remember_app.remember.entity.dto.UserLoginDTO;
+import com.remember_app.remember.entity.dto.UserRegisterDTO;
 import com.remember_app.remember.exception.UserException;
 import com.remember_app.remember.service.UserService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -14,6 +19,8 @@ import java.util.List;
 public class UserController {
     @Resource
     private UserService userService;
+    @Resource
+    private JwtUtils jwtUtils;
 
     /**
      * 新增用户
@@ -80,5 +87,30 @@ public class UserController {
         return Result.success();
     }
 
+    /**
+     * 用户注册接口
+     */
+    @PostMapping("/register")
+    public Result register(@RequestBody UserRegisterDTO registerDTO) {
+        userService.register(registerDTO);
+        return Result.success();
+    }
 
+    /**
+     * 用户登录接口
+     */
+    @PostMapping("/login")
+    public Result login(@RequestBody UserLoginDTO loginDTO) {
+        User user = userService.login(loginDTO);
+
+        if (user != null) {
+            String token = jwtUtils.creatToken(user);
+
+            HashMap<String, Object> res = new HashMap<>();
+            res.put("user", user);
+            res.put("token", token);
+            return Result.success(res);
+        }
+        return Result.error("登录失败");
+    }
 }

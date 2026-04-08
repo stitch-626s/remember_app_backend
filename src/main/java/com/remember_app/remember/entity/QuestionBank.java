@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Data
@@ -50,5 +51,8 @@ public class QuestionBank {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime qbUpdatedAt;
+
+    @TableField(exist = false)
+    private List<Question> questions;
 
 }
