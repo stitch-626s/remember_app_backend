@@ -7,6 +7,6 @@ import com.remember_app.remember.service.QuestionBankService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class QuestionBankImpl extends ServiceImpl<QuestionBankMapper, QuestionBank> implements QuestionBankService {
+public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, QuestionBank> implements QuestionBankService {
 
 }
