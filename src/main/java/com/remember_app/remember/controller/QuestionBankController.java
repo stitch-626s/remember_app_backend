@@ -8,8 +8,10 @@ import com.remember_app.remember.exception.QuestionBankException;
 import com.remember_app.remember.service.QuestionBankService;
 import com.remember_app.remember.service.QuestionService;
 import jakarta.annotation.Resource;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,6 +28,10 @@ public class QuestionBankController {
     @PostMapping
     public Result save(@RequestBody QuestionBank questionBank) {
         try {
+            questionBank.setQuestionNumber(0);
+            questionBank.setQbCreatedAt(LocalDateTime.now());
+            questionBank.setQbUpdatedAt(LocalDateTime.now());
+
             questionBankService.save(questionBank);
         }catch (QuestionBankException e){
             return Result.error(e.getMessage());
@@ -54,7 +60,9 @@ public class QuestionBankController {
         try {
             QuestionBank bank = questionBankService.getById(id);
             if (bank != null) {
-                bank.setQuestions(questionService.getQuestionsByQbId(id));
+                List<Question> questions = questionService.getQuestionsByQbId(id);
+                bank.setQuestions(questions);
+                bank.setQuestionNumber(questions.size());
             }
             return Result.success(bank);
         }catch (QuestionBankException e){
@@ -73,6 +81,7 @@ public class QuestionBankController {
             for (QuestionBank bank : bankList) {
                 List<Question> questions = questionService.getQuestionsByQbId(bank.getQbId());
                 bank.setQuestions(questions);
+                bank.setQuestionNumber(questions.size());
             }
             return Result.success(bankList);
         } catch (QuestionBankException e) {
@@ -90,6 +99,7 @@ public class QuestionBankController {
             for (QuestionBank bank : bankList) {
                 List<Question> questions = questionService.getQuestionsByQbId(bank.getQbId());
                 bank.setQuestions(questions);
+                bank.setQuestionNumber(questions.size());
             }
             return Result.success(bankList);
         }catch (QuestionBankException e){
