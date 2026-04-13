@@ -77,17 +77,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RuntimeException("该账号已被禁用，请联系管理员。");
         }
 
-        user.setUserUpdatedAt(LocalDateTime.now());
+        user.setUserLastLoginAt(LocalDateTime.now());
         this.updateById(user);
 
         user.setUserPassword(null);
         return user;
     }
 
+    public void updateUser(User user, boolean updatePassword){
+        if (!updatePassword) {
+            user.setUserPassword(null);
+        } else {
+            user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
+        }
+        user.setUserUpdatedAt(LocalDateTime.now());
+        this.updateById(user);
+    }
+
     @Override
     public boolean removeById(Serializable id) {
         LambdaQueryWrapper<Question> questionWrapper = new LambdaQueryWrapper<>();
-        questionWrapper.eq(Question::getQuestionId, id);
+        questionWrapper.eq(Question::getUserId, id);
         questionMapper.delete(questionWrapper);
 
         LambdaQueryWrapper<QuestionBank> qbWrapper = new LambdaQueryWrapper<>();

@@ -8,6 +8,8 @@ import com.remember_app.remember.entity.dto.UserRegisterDTO;
 import com.remember_app.remember.exception.UserException;
 import com.remember_app.remember.service.UserService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,6 +22,8 @@ public class UserController {
     private UserService userService;
     @Resource
     private JwtUtils jwtUtils;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     /**
      * 新增用户
@@ -40,6 +44,12 @@ public class UserController {
     @PutMapping
     public Result update(@RequestBody User user) {
         try {
+            if (user.getUserPassword() != null && !user.getUserPassword().isEmpty()) {
+                user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
+            } else {
+                user.setUserPassword(null);
+            }
+
             userService.updateById(user);
         }catch (UserException e){
             return Result.error(e.getMessage());
@@ -91,8 +101,12 @@ public class UserController {
      */
     @PostMapping("/register")
     public Result register(@RequestBody UserRegisterDTO registerDTO) {
-        userService.register(registerDTO);
-        return Result.success();
+        try {
+            userService.register(registerDTO);
+            return Result.success();
+        } catch (UserException e) {
+            return Result.error(e.getMessage());
+        }
     }
 
     /**
@@ -100,15 +114,19 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody UserLoginDTO loginDTO) {
-        User user = userService.login(loginDTO);
+        try {
+            User user = userService.login(loginDTO);
 
-        if (user != null) {
-            String token = jwtUtils.createToken(user);
+            if (user != null) {
+                String token = jwtUtils.createToken(user);
 
-            HashMap<String, Object> res = new HashMap<>();
-            res.put("user", user);
-            res.put("token", token);
-            return Result.success(res);
+                HashMap<String, Object> res = new HashMap<>();
+                res.put("user", user);
+                res.put("token", token);
+                return Result.success(res);
+            }
+        } catch (UserException e) {
+            return Result.error(e.getMessage());
         }
         return Result.error("登录失败");
     }

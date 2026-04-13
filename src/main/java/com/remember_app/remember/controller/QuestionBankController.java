@@ -2,12 +2,14 @@ package com.remember_app.remember.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.remember_app.remember.common.Result;
+import com.remember_app.remember.common.SecurityUtils;
 import com.remember_app.remember.entity.Question;
 import com.remember_app.remember.entity.QuestionBank;
 import com.remember_app.remember.exception.QuestionBankException;
 import com.remember_app.remember.service.QuestionBankService;
 import com.remember_app.remember.service.QuestionService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,6 +22,8 @@ public class QuestionBankController {
     private QuestionBankService questionBankService;
     @Resource
     private QuestionService questionService;
+    @Autowired
+    private SecurityUtils securityUtils;
 
     /**
      * 新增题库
@@ -112,6 +116,20 @@ public class QuestionBankController {
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
         try {
+            QuestionBank bank = questionBankService.getById(id);
+            Integer currentUserId = securityUtils.getCurrentUserId();
+            if (bank == null) {
+                return Result.error("题库不存在");
+            }
+
+            if (!bank.getUserId().equals(currentUserId)) {
+                return Result.error("无权操作此题库");
+            }
+
+            LambdaQueryWrapper<Question> questionWrapper = new LambdaQueryWrapper<>();
+            questionWrapper.eq(Question::getQbId, id);
+            questionService.remove(questionWrapper);
+
             questionBankService.removeById(id);
         }catch (QuestionBankException e){
             return Result.error(e.getMessage());

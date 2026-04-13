@@ -1,10 +1,12 @@
 package com.remember_app.remember.controller;
 
 import com.remember_app.remember.common.Result;
+import com.remember_app.remember.common.SecurityUtils;
 import com.remember_app.remember.entity.Question;
 import com.remember_app.remember.exception.QuestionException;
 import com.remember_app.remember.service.QuestionService;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -13,6 +15,8 @@ import java.util.List;
 public class QuestionController {
     @Resource
     private QuestionService questionService;
+    @Autowired
+    private SecurityUtils securityUtils;
 
     /**
      * 新增题目
@@ -33,6 +37,16 @@ public class QuestionController {
     @PutMapping
     public Result update(@RequestBody Question question) {
         try {
+            Question existing = questionService.getById(question.getQuestionId());
+            Integer currentUserId = securityUtils.getCurrentUserId();
+            if (existing == null) {
+                return Result.error("题目不存在");
+            }
+
+            if (!existing.getUserId().equals(currentUserId)) {
+                return Result.error("无权操作此题目");
+            }
+
             questionService.updateById(question);
         }catch (QuestionException e){
             return Result.error(e.getMessage());
@@ -72,6 +86,14 @@ public class QuestionController {
     @DeleteMapping("/{id}")
     public Result deleteById(@PathVariable Integer id) {
         try {
+            Question question = questionService.getById(id);
+            Integer currentUserId = securityUtils.getCurrentUserId();
+            if (question == null) {
+                return Result.error("题目不存在");
+            }
+            if (!question.getUserId().equals(currentUserId)) {
+                return Result.error("无权操作此题目");
+            }
             questionService.removeById(id);
         }catch (QuestionException e){
             return Result.error(e.getMessage());
