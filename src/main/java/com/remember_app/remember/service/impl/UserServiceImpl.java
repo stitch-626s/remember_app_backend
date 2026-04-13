@@ -84,16 +84,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user;
     }
 
-    public void updateUser(User user, boolean updatePassword){
-        if (!updatePassword) {
-            user.setUserPassword(null);
-        } else {
-            user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
-        }
-        user.setUserUpdatedAt(LocalDateTime.now());
-        this.updateById(user);
-    }
-
     @Override
     public boolean removeById(Serializable id) {
         LambdaQueryWrapper<Question> questionWrapper = new LambdaQueryWrapper<>();
