@@ -69,7 +69,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         boolean isPasswordMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword());
 
-        if ( !user.getUserAccount().equals(loginDTO.getUsername()) || !isPasswordMatch) {
+        if (!isPasswordMatch) {
             throw new RuntimeException("账号或密码不正确，请重新输入。");
         }
 

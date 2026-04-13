@@ -21,7 +21,7 @@ public class JwtUtils {
     /**
      * 创建 Token
      */
-    public String creatToken(User user) {
+    public String createToken(User user) {
         HashMap<String, Object> payload = new HashMap<>();
         payload.put(JWT.ISSUED_AT, DateUtil.date());
         payload.put(JWT.EXPIRES_AT, new Date(System.currentTimeMillis() + securityProperties.getJwtExpire()));

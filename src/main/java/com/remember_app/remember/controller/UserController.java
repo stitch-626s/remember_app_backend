@@ -103,7 +103,7 @@ public class UserController {
         User user = userService.login(loginDTO);
 
         if (user != null) {
-            String token = jwtUtils.creatToken(user);
+            String token = jwtUtils.createToken(user);
 
             HashMap<String, Object> res = new HashMap<>();
             res.put("user", user);
