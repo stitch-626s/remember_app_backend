@@ -1,5 +1,6 @@
 package com.remember_app.remember.common;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -32,6 +33,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-
+    @Bean
+    public FilterRegistrationBean<RsaDecryptFilter> rsaDecryptFilterRegistration() {
+        FilterRegistrationBean<RsaDecryptFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new RsaDecryptFilter());
+        registration.addUrlPatterns("/users/*");
+        registration.setOrder(1);
+        return registration;
+    }
 
 }

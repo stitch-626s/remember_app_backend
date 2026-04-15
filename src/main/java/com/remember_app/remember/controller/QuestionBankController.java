@@ -9,7 +9,6 @@ import com.remember_app.remember.exception.QuestionBankException;
 import com.remember_app.remember.service.QuestionBankService;
 import com.remember_app.remember.service.QuestionService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,7 +21,7 @@ public class QuestionBankController {
     private QuestionBankService questionBankService;
     @Resource
     private QuestionService questionService;
-    @Autowired
+    @Resource
     private SecurityUtils securityUtils;
 
     /**

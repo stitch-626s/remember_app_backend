@@ -12,6 +12,7 @@ import com.remember_app.remember.mapper.QuestionMapper;
 import com.remember_app.remember.mapper.UserMapper;
 import com.remember_app.remember.service.UserService;
 import jakarta.annotation.Resource;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,19 +36,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional
     public void register(UserRegisterDTO registerDTO){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserAccount, registerDTO.getUsername());
+        queryWrapper.eq(User::getUserAccount, registerDTO.getUserAccount());
         if (this.count(queryWrapper) > 0) {
             throw new RuntimeException("该账号(邮箱)已被注册，请直接登录。");
         }
 
         User user = new User();
-        user.setUserAccount(registerDTO.getUsername());
-        user.setUserEmail(registerDTO.getUsername());
+        user.setUserAccount(registerDTO.getUserAccount());
+        user.setUserEmail(registerDTO.getUserAccount());
 
         String encodePassword = passwordEncoder.encode(registerDTO.getPassword());
         user.setUserPassword(encodePassword);
 
-        user.setUserName("用户_" + registerDTO.getUsername().split("@")[0]);
+        if (registerDTO.getUserAccount() == null || registerDTO.getUserAccount().isEmpty()) {
+            throw new RuntimeException("用户账号不能为空");
+        }
+        user.setUserName("用户_" + registerDTO.getUserAccount().split("@")[0]);
         user.setUserStatus(1);
         user.setUserCreatedAt(LocalDateTime.now());
         user.setUserUpdatedAt(LocalDateTime.now());
@@ -60,14 +64,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User login(UserLoginDTO loginDTO) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserAccount, loginDTO.getUsername());
+        queryWrapper.eq(User::getUserAccount, loginDTO.getUserAccount());
         User user = this.getOne(queryWrapper);
 
         if (user == null) {
             throw new RuntimeException("账号不存在，请重新输入。");
         }
 
-        boolean isPasswordMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getUserPassword());
+        String storeHash = user.getUserPassword();
+        String inputHash = loginDTO.getPassword();
+        boolean isPasswordMatch = BCrypt.checkpw(inputHash, storeHash);
 
         if (!isPasswordMatch) {
             throw new RuntimeException("账号或密码不正确，请重新输入。");
