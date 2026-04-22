@@ -1,14 +1,15 @@
 package com.remember_app.remember.controller;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.remember_app.remember.common.JwtUtils;
 import com.remember_app.remember.common.Result;
 import com.remember_app.remember.entity.User;
 import com.remember_app.remember.entity.dto.UserLoginDTO;
 import com.remember_app.remember.entity.dto.UserRegisterDTO;
+import com.remember_app.remember.entity.dto.UserUpdateDTO;
 import com.remember_app.remember.exception.UserException;
 import com.remember_app.remember.service.UserService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public class UserController {
     private UserService userService;
     @Resource
     private JwtUtils jwtUtils;
-    @Autowired
+    @Resource
     private BCryptPasswordEncoder passwordEncoder;
 
     /**
@@ -42,19 +43,52 @@ public class UserController {
      * 更新用户
      */
     @PutMapping
-    public Result update(@RequestBody User user) {
+    public Result update(@RequestBody UserUpdateDTO dto) {
         try {
-            if (user.getUserPassword() != null && !user.getUserPassword().isEmpty()) {
-                user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
-            } else {
-                user.setUserPassword(null);
+            if (dto.getUserId() == null) {
+                return Result.error("用户ID不能为空");
             }
 
-            userService.updateById(user);
-        }catch (UserException e){
+            User dbUser = userService.getById(dto.getUserId());
+            if (dbUser == null) {
+                return Result.error("用户不存在");
+            }
+
+            UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+            wrapper.eq("user_id", dto.getUserId());
+
+            if (dto.getUserName() != null) {
+                wrapper.set("user_name", dto.getUserName());
+            }
+            if (dto.getUserEmail() != null) {
+                wrapper.set("user_email", dto.getUserEmail());
+            }
+            if (dto.getUserPhoneNum() != null) {
+                wrapper.set("user_phone_num", dto.getUserPhoneNum());
+            }
+            if (dto.getUserAvatar() != null) {
+                wrapper.set("user_avatar", dto.getUserAvatar());
+            }
+
+            // 密码更新逻辑
+            if (dto.getUserPassword() != null && !dto.getUserPassword().isEmpty()) {
+                if (dto.getOldPassword() == null || dto.getOldPassword().isEmpty()) {
+                    return Result.error("请输入原密码");
+                }
+                if (!passwordEncoder.matches(dto.getOldPassword(), dbUser.getUserPassword())) {
+                    return Result.error("原密码错误");
+                }
+                wrapper.set("user_password", passwordEncoder.encode(dto.getUserPassword()));
+            }
+
+            userService.update(wrapper);
+
+            User updatedUser = userService.getById(dto.getUserId());
+            return Result.success(updatedUser);
+
+        } catch (UserException e) {
             return Result.error(e.getMessage());
         }
-        return Result.success();
     }
 
     /**
