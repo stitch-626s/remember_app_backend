@@ -1,4 +1,3 @@
-AI_PROMPT_TEMPLATE.md
 git-command.txt
 HELP.md
 target/
@@ -33,3 +32,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Other ###
+AI_PROMPT_TEMPLATE.md
