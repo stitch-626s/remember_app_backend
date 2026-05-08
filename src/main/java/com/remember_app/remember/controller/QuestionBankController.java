@@ -35,10 +35,10 @@ public class QuestionBankController {
             questionBank.setQbUpdatedAt(LocalDateTime.now());
 
             questionBankService.save(questionBank);
+            return Result.success(questionBank);
         }catch (QuestionBankException e){
             return Result.error(e.getMessage());
         }
-        return Result.success();
     }
 
     /**
